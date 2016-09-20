@@ -119,7 +119,7 @@ static int mail_search_mime_build_list(struct mail_search_mime_build_context *ct
 			return -1;
 		}
 		subargs = &(*subargs)->next;
-		sarg->type = SEARCH_SUB;
+		sarg->type = SEARCH_MIME_SUB;
 	}
 	if (ret < 0)
 		return -1;
