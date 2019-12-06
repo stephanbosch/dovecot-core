@@ -478,6 +478,18 @@ void lib_signals_ioloop_attach(void)
 		lib_signals_ioloop_switch();
 }
 
+static void lib_signals_unblock(int signo)
+{
+	sigset_t sigset;
+
+	if (sigemptyset(&sigset) < 0)
+		i_fatal("sigemptyset(): %m");
+	if (sigaddset(&sigset, signo) < 0)
+		i_fatal("sigaddset(%d): %m", signo);
+	if (sigprocmask(SIG_UNBLOCK, &sigset, NULL) < 0)
+		i_fatal("sigprocmask(SIG_UNBLOCK) failed: %m");
+}
+
 static void lib_signals_set(int signo, enum libsig_flags flags)
 {
 	struct sigaction act;
@@ -495,6 +507,10 @@ static void lib_signals_set(int signo, enum libsig_flags flags)
 		act.sa_flags |= SA_RESTART;
 	if (sigaction(signo, &act, NULL) < 0)
 		i_fatal("sigaction(%d): %m", signo);
+
+	/* Make sure the signal is not blocked (typically inherited from
+	   non-Dovecot parent process) */
+	lib_signals_unblock(signo);
 }
 
 void lib_signals_set_handler(int signo, enum libsig_flags flags,
